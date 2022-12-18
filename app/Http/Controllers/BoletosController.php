@@ -101,9 +101,14 @@ class BoletosController extends Controller
                     $item->cliente->uf
                 ));
 
-            $boletos[] = $boleto->getData();
+            $boletos[] = $boleto;
         }
 
-        return View('carne', ["boletos" => $boletos]);
+        $pdf = Boleto::carnes($boletos);
+
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+        ]);
+        // return View('carne', ["boletos" => $boletos]);
     }
 }

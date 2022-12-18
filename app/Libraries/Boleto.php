@@ -2,8 +2,20 @@
 
 namespace App\Libraries;
 
+use Exception;
 use \OpenBoleto\Banco\Santander;
 use \OpenBoleto\Agente;
+
+class PDF extends \FPDF {
+
+    public function Cell($w, $h = 0, $txt = '', $border = 0, $ln = 0, $align = '', $fill = false, $link = '')
+    {
+        try {
+            $txt = iconv("UTF-8", "ISO-8859-1", $txt);
+        } catch(Exception $e) {}
+        parent::Cell($w, $h, $txt, $border, $ln, $align, $fill, $link);
+    }
+}
 
 class Boleto
 {
@@ -57,7 +69,7 @@ class Boleto
         $sacado = $boleto->getSacado();
 
 
-        $pdf = new \FPDF();
+        $pdf = new PDF();
         $pdf->AddPage();
 
         $pdf->SetFont("Arial", 'B', 8);
@@ -81,10 +93,10 @@ class Boleto
 
         $pdf->SetLineWidth(0.1);
         $pdf->SetFont("Arial", '', 8);
-        $pdf->Cell(80, 4, "Beneficiário", "LT", 0);
+        $pdf->Cell(80, 4, "BeneficiÃ¡rio", "LT", 0);
         $pdf->Cell(30, 4, "CPF/CNPJ", "LTR", 0);
         $pdf->SetFont("Arial", '', 7);
-        $pdf->Cell(40, 3, "Agência/Código do", "T", 0);
+        $pdf->Cell(40, 3, "AgÃªncia/CÃ³digo do", "T", 0);
         $pdf->SetFont("Arial", '', 8);
         $pdf->Cell(40, 4, "Vencimento", "LRT", 1);
 
@@ -106,8 +118,8 @@ class Boleto
 
         $pdf->SetFont("Arial", '', 8);
         $pdf->Cell(110, 4, "Pagador", "L", 0);
-        $pdf->Cell(40, 4, "Nº documento", "L", 0);
-        $pdf->Cell(40, 4, "Nosso número", "LR", 1);
+        $pdf->Cell(40, 4, "NÂº documento", "L", 0);
+        $pdf->Cell(40, 4, "Nosso nÃºmero", "LR", 1);
 
         $pdf->SetFont("Arial", 'B', 8);
         $pdf->Cell(110, 4, $sacado->getNome(), "LB", 0);
@@ -115,7 +127,7 @@ class Boleto
         $pdf->Cell(40, 4, $boleto->getNossoNumero(true), "LRB", 1, 'R');
 
         $pdf->SetFont("Arial", '', 8);
-        $pdf->Cell(30, 4, "Espécie", "L", 0);
+        $pdf->Cell(30, 4, "EspÃ©cie", "L", 0);
         $pdf->Cell(40, 4, "Quantidade", "L", 0);
         $pdf->Cell(40, 4, "Valor", "L", 0);
         $pdf->Cell(40, 4, "(-) Descontos / Abatimentos", "L", 0);
@@ -130,8 +142,8 @@ class Boleto
 
         $pdf->SetFont("Arial", '', 8);
         $pdf->Cell(70, 4, "", "L", 0);
-        $pdf->Cell(40, 4, "(-) Outras deduções", "L", 0);
-        $pdf->Cell(40, 4, "(+) Outros acréscimos", "L", 0);
+        $pdf->Cell(40, 4, "(-) Outras dedu??es", "L", 0);
+        $pdf->Cell(40, 4, "(+) Outros acrÃ©scimos", "L", 0);
         $pdf->Cell(40, 4, "(=) Valor cobrado", "LR", 1);
 
 
@@ -143,7 +155,7 @@ class Boleto
         $pdf->MultiCell(190, 30, "", 1);
         $pdf->SetY($pdf->GetY() - 28);
         $pdf->Cell(100, 4, "Fornecimento de internet", 0, 0);
-        $pdf->Cell(90, 4, "Autenticação Mecânica", 0, 1, "R");
+        $pdf->Cell(90, 4, "AutenticaÃ§Ã£o MecÃ¢nica", 0, 1, "R");
         $pdf->SetY($pdf->GetY() + 28);
 
         $pdf->Cell(190, 3, "Corte na linha pontilhada", 0, 1, "R");
@@ -152,117 +164,251 @@ class Boleto
 
         $pdf->SetY($pdf->GetY() + 4, true);
 
+        self::fichaCompensacao($pdf, $boleto);
+
+        return $pdf->Output("S", "boleto", false);
+    }
+
+    /**
+     * @param \OpenBoleto\Banco\Santander[]
+     */
+
+    public static function carnes(array $boletos)
+    {
+        $pdf = new PDF();
+        $pdf->AddPage();
+        $i = 1;
+        foreach ($boletos as $b) {
+            /**
+             * @var \OpenBoleto\Banco\Santander $boleto */
+            $boleto = $b;
+
+            $y = $pdf->GetY();
+            self::fichaCompensacao($pdf, $boleto, true);
+            $y2 = $pdf->GetY();
+
+            $pdf->SetLeftMargin(10);
+            $pdf->SetY($y);
+
+
+            $pdf->setFont("Arial", "", 6);
+            $pdf->Cell(38, 2.5, "Vencimento", "TRL", 1);
+            $pdf->setFont("Arial", "B", 6);
+            $pdf->Cell(38, 2.5, "05/01/2023", "RL", 1);
+
+            $pdf->setFont("Arial", "", 6);
+            $pdf->Cell(38, 2.5, "AgÃªncia/CÃ³digo do BeneficiÃ¡rio", "TRL", 1);
+            $pdf->setFont("Arial", "B", 6);
+            $pdf->Cell(38, 2.5, "4004-5 / 177808-0", "RL", 1);
+
+            $pdf->setFont("Arial", "", 6);
+            $pdf->Cell(38, 2.5, "Nosso nÃºmero", "TRL", 1);
+            $pdf->setFont("Arial", "B", 6);
+            $pdf->Cell(38, 2.5, "000000000100-7", "RL", 1);
+
+            $pdf->setFont("Arial", "", 6);
+            $pdf->Cell(38, 2.5, "NÂº documento", "TRL", 1);
+            $pdf->setFont("Arial", "B", 6);
+            $pdf->Cell(38, 2.5, "", "RL", 1);
+
+            $pdf->setFont("Arial", "", 6);
+            $pdf->Cell(38, 2.5, "EspÃ©cie", "TRL", 1);
+            $pdf->setFont("Arial", "B", 6);
+            $pdf->Cell(38, 2.5, "REAL", "RL", 1);
+
+            $pdf->setFont("Arial", "", 6);
+            $pdf->Cell(38, 2.5, "Quantidade", "TRL", 1);
+            $pdf->setFont("Arial", "B", 6);
+            $pdf->Cell(38, 2.5, "", "RL", 1);
+
+            $pdf->setFont("Arial", "", 6);
+            $pdf->Cell(38, 2.5, "(=) Valor Documento", "TRL", 1);
+            $pdf->setFont("Arial", "B", 6);
+            $pdf->Cell(38, 2.5, "60,00", "RL", 1);
+
+            $pdf->setFont("Arial", "", 6);
+            $pdf->Cell(38, 2.5, "(-) Descontos / Abatimentos", "TRL", 1);
+            $pdf->setFont("Arial", "B", 6);
+            $pdf->Cell(38, 2.5, "", "RL", 1);
+
+            $pdf->setFont("Arial", "", 6);
+            $pdf->Cell(38, 2.5, "(-) Outras deduÃ§Ãµes", "TRL", 1);
+            $pdf->setFont("Arial", "B", 6);
+            $pdf->Cell(38, 2.5, "", "RL", 1);
+
+            $pdf->setFont("Arial", "", 6);
+            $pdf->Cell(38, 2.5, "(+) Mora / Multa", "TRL", 1);
+            $pdf->setFont("Arial", "B", 6);
+            $pdf->Cell(38, 2.5, "", "RL", 1);
+
+            $pdf->setFont("Arial", "", 6);
+            $pdf->Cell(38, 2.5, "(+) Outros acrÃ©scimos", "TRL", 1);
+            $pdf->setFont("Arial", "B", 6);
+            $pdf->Cell(38, 2.5, "", "RL", 1);
+
+            $pdf->setFont("Arial", "", 6);
+            $pdf->Cell(38, 2.5, "(=) Valor cobrado", "TRL", 1);
+            $pdf->setFont("Arial", "B", 6);
+            $pdf->Cell(38, 2.5, "", "RL", 1);
+
+            $pdf->setFont("Arial", "", 6);
+            $pdf->Cell(38, 2.5, "CNPJ do BeneficiÃ¡rio", "TRL", 1);
+            $pdf->setFont("Arial", "B", 6);
+            $pdf->Cell(38, 2.5, "11.340.883/0001-03", "RL", 1);
+
+            $pdf->setFont("Arial", "", 6);
+            $pdf->Cell(38, 2.5, "EndereÃ§o do BeneficiÃ¡rio", "TRL", 1);
+            $pdf->setFont("Arial", "B", 6);
+            $pdf->MultiCell(38, 2.5, "R JOAQUIM FERREIRA DE ARAUJO 192 LETRA A ", "RLB", 1);
+
+
+            $pdf->SetY($y2);
+
+
+
+            if ($i % 3 === 0) {
+                $pdf->AddPage();
+            }
+
+            $i++;
+        }
+
+
+        return $pdf->Output("S", "boleto", true);
+    }
+
+    /**
+     * @param \FPDF
+     * @param \OpenBoleto\Banco\Santander
+     */
+    public static function fichaCompensacao(\FPDF $pdf, $boleto, $carne = false)
+    {
+        $data = $boleto->getData();
+        $cedente = $boleto->getCedente();
+        $sacado = $boleto->getSacado();
         $pdf->SetLineWidth(0.5);
 
-        $pdf->Image("santander.jpg", null, null, 30, 6);
-        $pdf->SetXY(10, $pdf->GetY() - 6);
-        $pdf->Cell(35, 6, "", "R", 0, "C");
-        $pdf->SetFont("Arial", 'B', 16);
-        $pdf->Cell(20, 6, $boleto->getCodigoBancoComDv(), "R", 0, "C");
-        $pdf->SetFont("Arial", 'B', 12);
-        $pdf->Cell(135, 6, $boleto->getLinhaDigitavel(), "", 1, "R");
+        if ($carne) {
+            $h = 2.7;
+            $fontSize = 7;
+            $width = 150;
+            $pdf->SetLeftMargin(50);
+        } else {
+            $h = 4;
+            $fontSize = 8;
+            $width = 190;
+        }
+
+
+
+        $pdf->Image("santander.jpg", $pdf->GetX(), $pdf->GetY(), 30 / 190 * $width, 6);
+        $pdf->Cell((35 / 190) * $width, 6, "", "R", 0, "C");
+        $pdf->SetFont("Arial", 'B', 10);
+        $pdf->Cell((20 / 190) * $width, 6, $boleto->getCodigoBancoComDv(), "R", 0, "C");
+        $pdf->SetFont("Arial", 'B', 10);
+        $pdf->Cell((135 / 190) * $width, 6, $boleto->getLinhaDigitavel(), "", 1, "R");
 
         $pdf->SetLineWidth(0.1);
 
-        $pdf->SetFont("Arial", '', 8);
-        $pdf->Cell(135, 4, "Local de pagamento", "TL");
-        $pdf->Cell(55, 4, "Vencimento", "TLR", 1);
-        $pdf->SetFont("Arial", 'B', 8);
-        $pdf->Cell(135, 4, "Pagar preferencialmente no Banco Santander", "BL");
-        $pdf->Cell(55, 4, $boleto->getDataVencimento()->format('d/m/Y'), "BLR", 1, "R");
+        $pdf->SetFont("Arial", '', $fontSize);
+        $pdf->Cell((135 / 190) * $width, $h, "Local de pagamento", "TL");
+        $pdf->Cell((55 / 190) * $width, $h, "Vencimento", "TLR", 1);
+        $pdf->SetFont("Arial", 'B', $fontSize);
+        $pdf->Cell((135 / 190) * $width, $h, "Pagar preferencialmente no Banco Santander", "BL");
+        $pdf->Cell((55 / 190) * $width, $h, $boleto->getDataVencimento()->format('d/m/Y'), "BLR", 1, "R");
 
-        $pdf->SetFont("Arial", '', 8);
-        $pdf->Cell(135, 4, "Beneficiário", "TL");
-        $pdf->Cell(55, 4, "Agência/Código beneficiário", "TLR", 1);
-        $pdf->SetFont("Arial", 'B', 8);
-        $pdf->Cell(100, 4, $cedente->getNome(), "L");
-        $pdf->Cell(35, 4, $cedente->getDocumento(), "");
-        $pdf->Cell(55, 4, $boleto->getAgenciaCodigoCedente(), "LR", 1, "R");
+        $pdf->SetFont("Arial", '', $fontSize);
+        $pdf->Cell((135 / 190) * $width, $h, "BeneficiÃ¡rio", "TL");
+        $pdf->Cell((55 / 190) * $width, $h, "AgÃªncia/CÃ³digo beneficiÃ¡rio", "TLR", 1);
+        $pdf->SetFont("Arial", 'B', $fontSize);
+        $pdf->Cell((100 / 190) * $width, $h, $cedente->getNome(), "L");
+        $pdf->Cell((35 / 190) * $width, $h, $cedente->getDocumento(), "");
+        $pdf->Cell((55 / 190) * $width, $h, $boleto->getAgenciaCodigoCedente(), "LR", 1, "R");
 
-        $pdf->Cell(135, 4, $cedente->getEndereco(), "L");
-        $pdf->SetFont("Arial", '', 8);
-        $pdf->Cell(55, 4, "Nosso número", "TLR", 1);
+        $pdf->Cell((135 / 190) * $width, $h, $cedente->getEndereco(), "L");
+        $pdf->SetFont("Arial", '', $fontSize);
+        $pdf->Cell((55 / 190) * $width, $h, "Nosso nÃºmero", "TLR", 1);
 
-        $pdf->SetFont("Arial", 'B', 8);
-        $pdf->Cell(135, 4, $cedente->getCepCidadeUf(), "L");
-        $pdf->Cell(55, 4, $boleto->getNossoNumero(true), "LR", 1, "R");
+        $pdf->SetFont("Arial", 'B', $fontSize);
+        $pdf->Cell((135 / 190) * $width, $h, $cedente->getCepCidadeUf(), "L");
+        $pdf->Cell((55 / 190) * $width, $h, $boleto->getNossoNumero(true), "LR", 1, "R");
 
-        $pdf->SetFont("Arial", '', 8);
-        $pdf->Cell(30, 4, "Data do documento", "TL");
-        $pdf->Cell(30, 4, "Nº documento", "TL");
-        $pdf->Cell(30, 4, "Espécie doc.", "TL");
-        $pdf->Cell(15, 4, "Aceite", "TL");
-        $pdf->Cell(30, 4, "Data processamento", "TL");
-        $pdf->Cell(55, 4, "(=) Valor do Documento", "TLR", 1);
+        $pdf->SetFont("Arial", '', $fontSize);
+        $pdf->Cell((30 / 190) * $width, $h, "Data do documento", "TL");
+        $pdf->Cell((30 / 190) * $width, $h, "N? documento", "TL");
+        $pdf->Cell((30 / 190) * $width, $h, "Ã© doc.", "TL");
+        $pdf->Cell((15 / 190) * $width, $h, "Aceite", "TL");
+        $pdf->Cell((30 / 190) * $width, $h, "Data processamento", "TL");
+        $pdf->Cell((55 / 190) * $width, $h, "(=) Valor do Documento", "TLR", 1);
 
-        $pdf->SetFont("Arial", 'B', 8);
-        $pdf->Cell(30, 4, $boleto->getDataDocumento()->format('d/m/Y'), "L");
-        $pdf->Cell(30, 4, "", "L");
-        $pdf->Cell(30, 4, "", "L");
-        $pdf->Cell(15, 4, "N", "L");
-        $pdf->Cell(30, 4, $boleto->getDataProcessamento()->format('d/m/Y'), "L");
-        $pdf->Cell(55, 4, $data["valor_documento"], "LR", 1, "R");
+        $pdf->SetFont("Arial", 'B', $fontSize);
+        $pdf->Cell((30 / 190) * $width, $h, $boleto->getDataDocumento()->format('d/m/Y'), "L");
+        $pdf->Cell((30 / 190) * $width, $h, "", "L");
+        $pdf->Cell((30 / 190) * $width, $h, "", "L");
+        $pdf->Cell((15 / 190) * $width, $h, "N", "L");
+        $pdf->Cell((30 / 190) * $width, $h, $boleto->getDataProcessamento()->format('d/m/Y'), "L");
+        $pdf->Cell((55 / 190) * $width, $h, $data["valor_documento"], "LR", 1, "R");
 
-        $pdf->SetFont("Arial", '', 8);
-        $pdf->Cell(45, 4, "Carteira", "TL");
-        $pdf->Cell(15, 4, "Espécie", "TL");
-        $pdf->Cell(45, 4, "Quantidade", "TL");
-        $pdf->Cell(30, 4, "Valor", "TL");
-        $pdf->Cell(55, 4, " (-) Descontos / Abatimentos", "TLR", 1);
+        $pdf->SetFont("Arial", '', $fontSize);
+        $pdf->Cell((45 / 190) * $width, $h, "Carteira", "TL");
+        $pdf->Cell((15 / 190) * $width, $h, "Ã©", "TL");
+        $pdf->Cell((45 / 190) * $width, $h, "Quantidade", "TL");
+        $pdf->Cell((30 / 190) * $width, $h, "Valor", "TL");
+        $pdf->Cell((55 / 190) * $width, $h, " (-) Descontos / Abatimentos", "TLR", 1);
 
-        $pdf->SetFont("Arial", 'B', 8);
-        $pdf->Cell(45, 4, "Cobrança Simples ECR", "L");
-        $pdf->Cell(15, 4, $boleto->getEspecieDoc(), "L");
-        $pdf->Cell(45, 4, "", "L");
-        $pdf->Cell(30, 4, "", "L");
-        $pdf->Cell(55, 4, "", "LR", 1);
-
-        $x = $pdf->GetX();
-        $y = $pdf->GetY();
-        $pdf->MultiCell(135, 32, "", "TLRB");
-
-        $pdf->SetXY($x, $y);
-
-        $pdf->SetFont("Arial", '', 8);
-        $pdf->Cell(135, 4, "Instruções (Texto de responsabilidade do beneficiário)");
-        $pdf->Cell(55, 4, " (-) Outras deduções", "TLR", 1);
-        $pdf->Cell(135, 4, "");
-        $pdf->Cell(55, 4, "", "LR", 1);
-
-        $pdf->Cell(135, 4, "Após o dia 30/11 cobrar 2% de mora e 1% de juros ao dia.");
-        $pdf->Cell(55, 4, "(+) Mora / Multa", "TLR", 1);
-        $pdf->Cell(135, 4, "Não receber após o vencimento.");
-        $pdf->Cell(55, 4, "", "LR", 1);
-
-        $pdf->Cell(135, 4, "");
-        $pdf->Cell(55, 4, "(+) Outros acréscimos", "TLR", 1);
-        $pdf->Cell(135, 4, "");
-        $pdf->Cell(55, 4, "", "LR", 1);
-
-        $pdf->Cell(135, 4, "");
-        $pdf->Cell(55, 4, "(+) Mora / Multa", "TLR", 1);
-        $pdf->Cell(135, 4, "");
-        $pdf->Cell(55, 4, "", "BLR", 1);
+        $pdf->SetFont("Arial", 'B', $fontSize);
+        $pdf->Cell((45 / 190) * $width, $h, "CobranÃ§a Simples ECR", "L");
+        $pdf->Cell((15 / 190) * $width, $h, $boleto->getEspecieDoc(), "L");
+        $pdf->Cell((45 / 190) * $width, $h, "", "L");
+        $pdf->Cell((30 / 190) * $width, $h, "", "L");
+        $pdf->Cell((55 / 190) * $width, $h, "", "LR", 1);
 
         $x = $pdf->GetX();
         $y = $pdf->GetY();
-        $pdf->MultiCell(190, 20, "", "LRB");
+        $pdf->MultiCell(135 / 190 * $width, $h * 8, "", "TLRB");
 
         $pdf->SetXY($x, $y);
-        $pdf->Cell(190, 4, "Pagador", 0, 1);
 
-        $pdf->SetFont("Arial", 'B', 8);
-        $pdf->Cell(100, 4, $sacado->getNome(), 0, 0);
-        $pdf->Cell(90, 4, $sacado->getDocumento(), 0, 1);
+        $pdf->SetFont("Arial", '', $fontSize);
+        $pdf->Cell((135 / 190) * $width, $h, "Instru??es (Texto de responsabilidade do beneficiÃ¡rio)");
+        $pdf->Cell((55 / 190) * $width, $h, " (-) Outras dedu??es", "TLR", 1);
+        $pdf->Cell((135 / 190) * $width, $h, "");
+        $pdf->Cell((55 / 190) * $width, $h, "", "LR", 1);
 
-        $pdf->Cell(190, 4, $sacado->getEndereco(), 0, 1);
-        $pdf->Cell(190, 4, $sacado->getCepCidadeUf(), 0, 1);
+        $pdf->Cell((135 / 190) * $width, $h, "ApÃ³s o dia 30/11 cobrar 2% de mora e 1% de juros ao dia.");
+        $pdf->Cell((55 / 190) * $width, $h, "(+) Mora / Multa", "TLR", 1);
+        $pdf->Cell((135 / 190) * $width, $h, "NÃ£o receber apÃ³s o vencimento.");
+        $pdf->Cell((55 / 190) * $width, $h, "", "LR", 1);
+
+        $pdf->Cell((135 / 190) * $width, $h, "");
+        $pdf->Cell((55 / 190) * $width, $h, "(+) Outros acrÃ©scimos", "TLR", 1);
+        $pdf->Cell((135 / 190) * $width, $h, "");
+        $pdf->Cell((55 / 190) * $width, $h, "", "LR", 1);
+
+        $pdf->Cell((135 / 190) * $width, $h, "");
+        $pdf->Cell((55 / 190) * $width, $h, "(+) Mora / Multa", "TLR", 1);
+        $pdf->Cell((135 / 190) * $width, $h, "");
+        $pdf->Cell((55 / 190) * $width, $h, "", "BLR", 1);
+
+        $x = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->MultiCell($width, $h * 5, "", "LRB");
+
+        $pdf->SetXY($x, $y);
+        $pdf->Cell((190 / 190) * $width, $h, "Pagador", 0, 1);
+
+        $pdf->SetFont("Arial", 'B', $fontSize);
+        $pdf->Cell((100 / 190) * $width, $h, $sacado->getNome(), 0, 0);
+        $pdf->Cell((90 / 190) * $width, $h, $sacado->getDocumento(), 0, 1);
+
+        $pdf->Cell((190 / 190) * $width, $h, $sacado->getEndereco(), 0, 1);
+        $pdf->Cell((190 / 190) * $width, $h, $sacado->getCepCidadeUf(), 0, 1);
 
         $pdf->Ln(4);
-        $pdf->SetFont("Arial", '', 8);
-        $pdf->Cell(100, 4, "Pagador / Avalista", 0, 0);
-        $pdf->SetFont("Arial", 'B', 8);
-        $pdf->Cell(90, 4, "Autenticação mecânica - Ficha de Compensação", 0, 1, "R");
+        $pdf->SetFont("Arial", '', $fontSize);
+        $pdf->Cell((100 / 190) * $width, $h, "Pagador / Avalista", 0, 0);
+        $pdf->SetFont("Arial", 'B', $fontSize);
+        $pdf->Cell((90 / 190) * $width, $h, "AutenticaÃ§Ã£oo mecÃ¢nica - Ficha de CompensaÃ§Ã£o", 0, 1, "R");
 
         $bars = self::getBars($boleto->getData()['codigo_barras']);
 
@@ -270,10 +416,10 @@ class Boleto
             $fill = explode(' ', $bar)[0] == "black";
             $size = (explode(' ', $bar)[1] == "thin") ? 0.3 : 0.9;
 
-            $pdf->Cell($size, 20, "", 0, 0, "", $fill);
+            $pdf->Cell($size, 12, "", 0, 0, "", $fill);
         }
 
-        return $pdf->Output("S", "boleto", true);
+        $pdf->Ln(18);
     }
 
     public static function getBars(string $barcoHtml)

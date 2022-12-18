@@ -26,6 +26,7 @@ class KeyGenerateCommand extends Command
     {
         $key = $this->getRandomKey();
 
+       
         if ($this->option('show')) {
             return $this->line('<comment>'.$key.'</comment>');
         }

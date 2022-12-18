@@ -68,13 +68,13 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="bottomborder">
+                    <td class="">
                         <div class="titulo">(=) Valor cobrado</div>
                         <div class="conteudo"><?php echo $valor_cobrado ?></div>
                     </td>
                 </tr>
                 <tr>
-                    <td class="bottomborder">
+                    <td class="">
                         <div class="titulo">CNPJ do Beneficiário</div>
                         <div class="conteudo"><?php echo $cedente_cpf_cnpj ?></div>
                     </td>

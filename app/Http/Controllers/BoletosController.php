@@ -25,7 +25,7 @@ class BoletosController extends Controller
     {
         $documento = $request->get("documento");
         return ModelsBoleto::with('cliente')
-            ->whereHas('cliente', function (Builder $query) use($documento) {
+            ->whereHas('cliente', function (Builder $query) use ($documento) {
                 $query->where('documento', '=', $documento);
             })->get();
     }
@@ -51,8 +51,12 @@ class BoletosController extends Controller
                 $boletoData->cliente->cidade,
                 $boletoData->cliente->uf
             ));
+            // dd($boleto->getResourcePath());
 
-        return $boleto->getOutput();
+             $pdf = Boleto::pdf($boleto);
+            return response($pdf, 200, [
+                'Content-Type' => 'application/pdf',
+            ]);
     }
 
     public function store()

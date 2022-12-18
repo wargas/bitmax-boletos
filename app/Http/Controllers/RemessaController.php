@@ -87,7 +87,7 @@ class RemessaController extends Controller
                 ->setNumeroSequencialRegistroLote($sequencialLote)
                 ->setTipoInscricaoPagador(1)
                 ->setNumeroInscricaoPagador($boleto->cliente->documento)
-                ->setNomePagador($boleto->cliente->name)
+                ->setNomePagador($boleto->cliente->nome)
                 ->setEnderecoPagador($boleto->cliente->endereco)
                 ->setBairroPagador($boleto->cliente->bairro)
                 ->setCepPagador(substr($boleto->cliente->cep, 0, 5))

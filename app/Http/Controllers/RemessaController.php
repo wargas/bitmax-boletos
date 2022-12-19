@@ -72,12 +72,12 @@ class RemessaController extends Controller
 
             $line_p = new LineP();
             $line_p->setNumeroSequencialRegistroLote($sequencialLote);
-            $line_p->setValorNominalBoleto($boleto->valor);
+            $line_p->setValorNominalBoleto(number_format($boleto->valor,2,'',''));
             $line_p->setIdentificacaoBoletoNoBanco($boleto->nosso_numero);
             $line_p->setNumeroDocumento($boleto->codigo); //id fatura
             $line_p->setDataVencimentoBoleto($vencimento);
             $line_p->setDataEmissaoBoleto($emissao); //pegar do banco
-            $line_p->setValorNominalBoleto($boleto->valor);
+            $line_p->setValorNominalBoleto(number_format($boleto->valor,2,'',''));
             $line_p->setDataJurosMora($vencimento); //igual o vencimento
 
             $sequencialLote ++;
@@ -118,10 +118,11 @@ class RemessaController extends Controller
 
         $remessa->addLines($line_t_lote, $line_t_arquivo);
 
+        date_default_timezone_set("America/Recife");
 
         $remessaDb = ModelsRemessa::create([
             "sequencial" => $sequencial,
-            "data_criacao" => date("Y-m-d"),
+            "data_criacao" => date("Y-m-d H:i:s"),
             "status" => "PENDENTE"
         ]);
 

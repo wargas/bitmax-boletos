@@ -74,10 +74,10 @@ class RemessaController extends Controller
             $line_p->setNumeroSequencialRegistroLote($sequencialLote);
             $line_p->setValorNominalBoleto($boleto->valor);
             $line_p->setIdentificacaoBoletoNoBanco($boleto->nosso_numero);
-            $line_p->setNumeroDocumento($boleto->id); //id fatura
+            $line_p->setNumeroDocumento($boleto->codigo); //id fatura
             $line_p->setDataVencimentoBoleto($vencimento);
             $line_p->setDataEmissaoBoleto($emissao); //pegar do banco
-            $line_p->setValorNominalBoleto(6000);
+            $line_p->setValorNominalBoleto($boleto->valor);
             $line_p->setDataJurosMora($vencimento); //igual o vencimento
 
             $sequencialLote ++;
@@ -99,7 +99,7 @@ class RemessaController extends Controller
 
             $line_y = new LineY03();
             $line_y->setNumeroSequencialRegistroLote($sequencialLote);
-            $line_y->setIdentificacaoBoletoNoBanco($boleto->nosso_numero);
+            $line_y->setIdentificacaoBoletoNoBanco($boleto->codigo_pix);
 
             $sequencialLote ++;
 
@@ -126,7 +126,7 @@ class RemessaController extends Controller
         ]);
 
         Storage::disk('local')->put("remessas/remessa-{$remessaDb->id}.txt", $remessa->getText());
-        
+
         return $remessaDb;
     }
 

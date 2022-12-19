@@ -18,7 +18,7 @@ class LineY03 extends LineAbstract
     //adicionado para calcular a chave pix
     private $identificacao_boleto_no_banco;
 
- 
+
 
 
     function build()

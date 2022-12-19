@@ -50,9 +50,10 @@ class Boleto
     public static function getCedente()
     {
         return new Agente(
-            'INFOLINK',
+            'BITMAX TELECOM LTDA',
             '11.340.883/0001-03',
             'R JOAQUIM FERREIRA DE ARAUJO 192 LETRA A ',
+            'SOCORRO',
             '56210-000',
             'Santa Filomena',
             'PE'
@@ -123,7 +124,7 @@ class Boleto
 
         $pdf->SetFont("Arial", 'B', 8);
         $pdf->Cell(110, 4, $sacado->getNome(), "LB", 0);
-        $pdf->Cell(40, 4, "", "LB", 0);
+        $pdf->Cell(40, 4, $boleto->getNumeroDocumento(), "LB", 0);
         $pdf->Cell(40, 4, $boleto->getNossoNumero(true), "LRB", 1, 'R');
 
         $pdf->SetFont("Arial", '', 8);
@@ -194,7 +195,7 @@ class Boleto
             $pdf->setFont("Arial", "", 6);
             $pdf->Cell(38, 2.5, "Vencimento", "TRL", 1);
             $pdf->setFont("Arial", "B", 6);
-            $pdf->Cell(38, 2.5, "05/01/2023", "RL", 1);
+            $pdf->Cell(38, 2.5, $boleto->getDataVencimento()->format("d/m/Y"), "RL", 1);
 
             $pdf->setFont("Arial", "", 6);
             $pdf->Cell(38, 2.5, "Agência/Código do Beneficiário", "TRL", 1);
@@ -204,12 +205,12 @@ class Boleto
             $pdf->setFont("Arial", "", 6);
             $pdf->Cell(38, 2.5, "Nosso número", "TRL", 1);
             $pdf->setFont("Arial", "B", 6);
-            $pdf->Cell(38, 2.5, "000000000100-7", "RL", 1);
+            $pdf->Cell(38, 2.5, $boleto->getNossoNumero(), "RL", 1);
 
             $pdf->setFont("Arial", "", 6);
             $pdf->Cell(38, 2.5, "Nº documento", "TRL", 1);
             $pdf->setFont("Arial", "B", 6);
-            $pdf->Cell(38, 2.5, "", "RL", 1);
+            $pdf->Cell(38, 2.5, $boleto->getNumeroDocumento(), "RL", 1);
 
             $pdf->setFont("Arial", "", 6);
             $pdf->Cell(38, 2.5, "Espécie", "TRL", 1);
@@ -224,7 +225,7 @@ class Boleto
             $pdf->setFont("Arial", "", 6);
             $pdf->Cell(38, 2.5, "(=) Valor Documento", "TRL", 1);
             $pdf->setFont("Arial", "B", 6);
-            $pdf->Cell(38, 2.5, "60,00", "RL", 1);
+            $pdf->Cell(38, 2.5, $boleto->getValor(), "RL", 1);
 
             $pdf->setFont("Arial", "", 6);
             $pdf->Cell(38, 2.5, "(-) Descontos / Abatimentos", "TRL", 1);
@@ -343,7 +344,7 @@ class Boleto
 
         $pdf->SetFont("Arial", 'B', $fontSize);
         $pdf->Cell((30 / 190) * $width, $h, $boleto->getDataDocumento()->format('d/m/Y'), "L");
-        $pdf->Cell((30 / 190) * $width, $h, "", "L");
+        $pdf->Cell((30 / 190) * $width, $h, $boleto->getNumeroDocumento(), "L");
         $pdf->Cell((30 / 190) * $width, $h, "", "L");
         $pdf->Cell((15 / 190) * $width, $h, "N", "L");
         $pdf->Cell((30 / 190) * $width, $h, $boleto->getDataProcessamento()->format('d/m/Y'), "L");

@@ -42,6 +42,7 @@ class BoletosController extends Controller
         $boleto
             ->setDataVencimento(new \DateTime($boletoData->vencimento))
             ->setValor($boletoData->valor)
+            ->setNumeroDocumento($boletoData->codigo)
             ->setSequencial($boletoData->nosso_numero)
             ->setSacado(new Agente(
                 $boletoData->cliente->nome,
@@ -91,6 +92,7 @@ class BoletosController extends Controller
             $boleto
                 ->setDataVencimento(new \DateTime($item->vencimento))
                 ->setValor($item->valor)
+                ->setNumeroDocumento($item->codigo)
                 ->setSequencial($item->nosso_numero)
                 ->setSacado(new Agente(
                     $item->cliente->nome,

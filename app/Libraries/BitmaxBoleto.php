@@ -1,32 +1,35 @@
 <?php
-
 namespace App\Libraries;
 
-use Exception;
-use \OpenBoleto\Banco\Santander;
-use \OpenBoleto\Agente;
+use App\Libraries\Pix\PIXDinamico;
+use App\Libraries\PDF;
+use OpenBoleto\Agente;
+use OpenBoleto\Banco\Santander;
 
-class PDF extends \FPDF {
+class BitmaxBoleto extends Santander {
 
-    public function Cell($w, $h = 0, $txt = '', $border = 0, $ln = 0, $align = '', $fill = false, $link = '')
+    protected $pix_url = '';
+
+    public function __construct($params)
     {
-        try {
-            $txt = iconv("UTF-8", "ISO-8859-1", $txt);
-        } catch(Exception $e) {}
-        parent::Cell($w, $h, $txt, $border, $ln, $align, $fill, $link);
+        parent::__construct($params);
     }
-}
-
-class Boleto
-{
 
     /**
-     * @return \OpenBoleto\BoletoAbstract;
+     * @return \App\Libraries\BitmaxBoleto
      */
-    public static function defaultBoleto()
-    {
-        return new Santander([
-            'cedente' => self::getCedente(),
+    public static function factory() {
+        $cedente = new Agente(
+            'BITMAX TELECOM LTDA',
+            '11.340.883/0001-03',
+            'R JOAQUIM FERREIRA DE ARAUJO 192 LETRA A ',
+            'SOCORRO',
+            '56210-000',
+            'Santa Filomena',
+            'PE'
+        );
+        return new BitmaxBoleto([
+            'cedente' => $cedente,
             'agencia' => 4004,
             'carteira' => 101,
             'conta' => 177808,
@@ -45,26 +48,51 @@ class Boleto
     }
 
     /**
-     * @return \OpenBoleto\Agente
+     * @return \App\Libraries\BitmaxBoleto
      */
-    public static function getCedente()
-    {
-        return new Agente(
-            'BITMAX TELECOM LTDA',
-            '11.340.883/0001-03',
-            'R JOAQUIM FERREIRA DE ARAUJO 192 LETRA A ',
-            'SOCORRO',
-            '56210-000',
-            'Santa Filomena',
-            'PE'
-        );
+    public static function fromDB($boleto_from_db) {
+        $boleto = self::factory();
+
+        $boleto->setPixUrl($boleto_from_db->url_pix);
+
+        $boleto
+            ->setDataVencimento(new \DateTime($boleto_from_db->vencimento))
+            ->setValor($boleto_from_db->valor)
+            ->setNumeroDocumento($boleto_from_db->codigo)
+            ->setSequencial($boleto_from_db->nosso_numero)
+            ->setSacado(new Agente(
+                $boleto_from_db->cliente->nome,
+                $boleto_from_db->cliente->documento,
+                $boleto_from_db->cliente->endereco,
+                $boleto_from_db->cliente->cep,
+                $boleto_from_db->cliente->cidade,
+                $boleto_from_db->cliente->uf
+            ));
+        return $boleto;
+    }
+
+    public function setPixUrl(string | null $url) {
+        $this->pix_url = $url;
+
+        return $this;
+    }
+
+    public function getPixUrl() {
+        return $this->pix_url;
+    }
+
+    public function getPixCode() {
+        $pix = new PIXDinamico($this->valor, $this->pix_url);
+
+        return $pix->getValue();
     }
 
     /**
-     * @param \OpenBoleto\Banco\Santander $boleto;
+     * @param \App\Libraries\BitmaxBoleto $boleto;
      */
-    public static function pdf(Santander $boleto)
+    public function pdf()
     {
+        $boleto = $this;
         $data = $boleto->getData();
         $cedente = $boleto->getCedente();
         $sacado = $boleto->getSacado();
@@ -171,7 +199,7 @@ class Boleto
     }
 
     /**
-     * @param \OpenBoleto\Banco\Santander[]
+     * @param \App\Libraries\BitmaxBoleto []
      */
 
     public static function carnes(array $boletos)
@@ -280,9 +308,9 @@ class Boleto
 
     /**
      * @param \FPDF
-     * @param \OpenBoleto\Banco\Santander
+     * @param \App\Libraries\BitmaxBoleto
      */
-    public static function fichaCompensacao(\FPDF $pdf, $boleto, $carne = false)
+    public static function fichaCompensacao(\FPDF $pdf, BitmaxBoleto $boleto, $carne = false)
     {
         $data = $boleto->getData();
         $cedente = $boleto->getCedente();
@@ -372,14 +400,14 @@ class Boleto
 
         $pdf->SetFont("Arial", '', $fontSize);
         $pdf->Cell((135 / 190) * $width, $h, "Instruções (Texto de responsabilidade do beneficiário)");
-        
 
-        $x = $pdf->GetX();
-        $y = $pdf->GetY();
-        $pdf->Image('https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=warag', $x-20, $y+2, 18, 18, 'png');
+        if ($boleto->getPixUrl()) {
+            $x = $pdf->GetX();
+            $y = $pdf->GetY();
+            $pdf->Image('https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' . $boleto->getPixCode(), $x - 20, $y + 2, 18, 18, 'png');
 
-        $pdf->SetXY($x, $y);
-
+            $pdf->SetXY($x, $y);
+        }
 
         $pdf->Cell((55 / 190) * $width, $h, " (-) Outras deduções", "TLR", 1);
         $pdf->Cell((135 / 190) * $width, $h, "");
@@ -429,8 +457,8 @@ class Boleto
             $pdf->Cell($size, 12, "", 0, 0, "", $fill);
         }
 
-       
-        
+
+
 
         $pdf->Ln(18);
     }

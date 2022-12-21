@@ -34,12 +34,14 @@ class RemessaController extends Controller
 
         $retorno = new Retorno($text);
 
-        dd(
+        
+
+        return(
             [
                 "HeaderArquivo" => $retorno->getHeaderArquivo(),
                 "HeaderLote" => $retorno->getHeaderLote(),
                 "SegmentosU" => $retorno->getSegmentosU(),
-                "SegmentosT" => $retorno->getSegmentosT()
+                "SegmentosT" => $retorno->getSegmentosT(),
             ]
         );
     }

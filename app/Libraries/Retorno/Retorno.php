@@ -11,6 +11,7 @@ class Retorno
 
     private $linesT = [];
     private $linesU = [];
+    private $linesY = [];
 
     public function __construct(string $texto)
     {
@@ -29,6 +30,9 @@ class Retorno
             }
             if ($segmento == 'U') {
                 $this->linesU[] = $line;
+            }
+            if ($segmento == 'Y') {
+                $this->linesY[] = $line;
             }
         }
     }
@@ -136,7 +140,7 @@ class Retorno
             $segmento->tipoDeRegistro = $this->getValue($line, 8, 8, 'N');
             $segmento->numeroSequencialDoRegistroNoLote = $this->getValue($line, 9, 13, 'N');
             $segmento->codidgoSegmentoDoRegistroDetalhe = $this->getValue($line, 14, 14, 'A');
-            //02 ENTRADA CONFIMADA //06 LIQUIDAÇAO 
+            //02 ENTRADA CONFIMADA //06 LIQUIDAÇAO
             $segmento->codigoDeMovimento = $this->getValue($line, 16, 17, 'N');
             $segmento->jurosMultaEncargos = $this->getValue($line, 18, 32, 'N');
             $segmento->valorDoDescontoConcedido = $this->getValue($line, 33, 47, 'N');
@@ -153,6 +157,30 @@ class Retorno
             $segmento->valorDaOcorrenciaDoPagador = $this->getValue($line, 166, 180, 'N');
             $segmento->complementoDaOcorrenciaDoPagador = $this->getValue($line, 181, 210, 'A');
             $segmento->codigoDoBancoCorrespondenteCompensacao = $this->getValue($line, 211, 213, 'N');
+
+            $segmentos[] = $segmento;
+        }
+
+        return $segmentos;
+    }
+
+    public function getSegmentosY()
+    {
+        $segmentos = [];
+
+        foreach ($this->linesY as $line) {
+            $segmento = new \stdClass();
+
+            $segmento->codigoDoBancoNaCompensacao = $this->getValue($line, 1, 3, 'N');
+            $segmento->loteDeServico = $this->getValue($line, 4, 7, 'N');
+            $segmento->tipoDeRegistro = $this->getValue($line, 8, 8, 'N');
+            $segmento->numeroSequencialDoRegistroNoLote = $this->getValue($line, 9, 13, 'N');
+            $segmento->codidgoSegmentoDoRegistroDetalhe = $this->getValue($line, 14, 14, 'A');
+            //02 ENTRADA CONFIMADA //06 LIQUIDAÇAO
+            $segmento->codigoDeMovimento = $this->getValue($line, 16, 17, 'N');
+            $segmento->tipoChavePix = $this->getValue($line, 81, 81, 'A');
+            $segmento->chavePixUrlQrCode = $this->getValue($line, 82, 158, 'A');
+            $segmento->txId = $this->getValue($line, 159, 193, 'A');
 
             $segmentos[] = $segmento;
         }

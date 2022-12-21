@@ -39,7 +39,8 @@ class RemessaController extends Controller
                 "HeaderArquivo" => $retorno->getHeaderArquivo(),
                 "HeaderLote" => $retorno->getHeaderLote(),
                 "SegmentosU" => $retorno->getSegmentosU(),
-                "SegmentosT" => $retorno->getSegmentosT()
+                "SegmentosT" => $retorno->getSegmentosT(),
+                "SegmentosY" => $retorno->getSegmentosY()
             ]
         );
     }

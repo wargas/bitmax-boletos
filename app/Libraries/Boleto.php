@@ -371,8 +371,17 @@ class Boleto
         $pdf->SetXY($x, $y);
 
         $pdf->SetFont("Arial", '', $fontSize);
-        $pdf->Cell((135 / 190) * $width, $h, "Instru??es (Texto de responsabilidade do beneficiário)");
-        $pdf->Cell((55 / 190) * $width, $h, " (-) Outras dedu??es", "TLR", 1);
+        $pdf->Cell((135 / 190) * $width, $h, "Instruções (Texto de responsabilidade do beneficiário)");
+        
+
+        $x = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->Image('https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=warag', $x-20, $y+2, 18, 18, 'png');
+
+        $pdf->SetXY($x, $y);
+
+
+        $pdf->Cell((55 / 190) * $width, $h, " (-) Outras deduções", "TLR", 1);
         $pdf->Cell((135 / 190) * $width, $h, "");
         $pdf->Cell((55 / 190) * $width, $h, "", "LR", 1);
 
@@ -419,6 +428,9 @@ class Boleto
 
             $pdf->Cell($size, 12, "", 0, 0, "", $fill);
         }
+
+       
+        
 
         $pdf->Ln(18);
     }

@@ -12,6 +12,8 @@ class Boleto extends Model
         'nosso_numero',
         'valor',
         'status',
+        'txid',
+        'url_pix',
     ];
 
     public function cliente() {

@@ -25,24 +25,47 @@ class RemessaController extends Controller
         return ModelsRemessa::all();
     }
 
-
     function show() {}
 
     function retorno(Request $request)
     {
+
+        /*
+         $remessaDb = ModelsRemessa::create([
+            "sequencial" => $sequencial,
+            "data_criacao" => date("Y-m-d H:i:s"),
+            "status" => "PENDENTE"
+        ]);
+        */
+
         $text = file_get_contents($request->file('file'));
 
         $retorno = new Retorno($text);
 
-        dd(
-            [
-                "HeaderArquivo" => $retorno->getHeaderArquivo(),
-                "HeaderLote" => $retorno->getHeaderLote(),
-                "SegmentosU" => $retorno->getSegmentosU(),
-                "SegmentosT" => $retorno->getSegmentosT(),
-                "SegmentosY" => $retorno->getSegmentosY()
-            ]
-        );
+        $SegmentosY = $retorno->getSegmentosY();
+
+        foreach($SegmentosY as $r){
+
+            $boletoDb = Boleto::where('txid', $r->txId);
+
+            $update = $boletoDb->update([
+                'url_pix' => $r->chavePixUrlQrCode
+            ]);
+
+            if($update){
+                return ['message' => 'Success'];
+            }
+        }
+
+        // dd(
+        //     [
+        //         "HeaderArquivo" => $retorno->getHeaderArquivo(),
+        //         "HeaderLote" => $retorno->getHeaderLote(),
+        //         "SegmentosU" => $retorno->getSegmentosU(),
+        //         "SegmentosT" => $retorno->getSegmentosT(),
+        //         "SegmentosY" => $retorno->getSegmentosY()
+        //     ]
+        // );
     }
 
     function store()
@@ -100,7 +123,7 @@ class RemessaController extends Controller
 
             $line_y = new LineY03();
             $line_y->setNumeroSequencialRegistroLote($sequencialLote);
-            $line_y->setIdentificacaoBoletoNoBanco($boleto->codigo_pix);
+            $line_y->setIdentificacaoBoletoNoBanco($boleto->txid);
 
             $sequencialLote ++;
 

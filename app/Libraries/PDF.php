@@ -3,8 +3,6 @@
 namespace App\Libraries;
 
 use Exception;
-use App\Libraries\Santander;
-use \OpenBoleto\Agente;
 
 class PDF extends \FPDF
 {

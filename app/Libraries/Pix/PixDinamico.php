@@ -2,7 +2,6 @@
 
 namespace App\Libraries\Pix;
 
-use Faker\Core\Number;
 
 class PIXDinamico extends PIX {
 

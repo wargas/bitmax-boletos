@@ -21,29 +21,52 @@ use Illuminate\Support\Facades\Storage;
 class RemessaController extends Controller
 {
 
-    function index() {
+    function index()
+    {
         return ModelsRemessa::all();
     }
 
-
-    function show() {}
+    function show()
+    {
+    }
 
     function retorno(Request $request)
     {
+
+        /*
+         $remessaDb = ModelsRemessa::create([
+            "sequencial" => $sequencial,
+            "data_criacao" => date("Y-m-d H:i:s"),
+            "status" => "PENDENTE"
+        ]);
+        */
+
         $text = file_get_contents($request->file('file'));
 
         $retorno = new Retorno($text);
 
-        
+        $SegmentosY = $retorno->getSegmentosY();
 
-        return(
-            [
-                "HeaderArquivo" => $retorno->getHeaderArquivo(),
-                "HeaderLote" => $retorno->getHeaderLote(),
-                "SegmentosU" => $retorno->getSegmentosU(),
-                "SegmentosT" => $retorno->getSegmentosT(),
-            ]
-        );
+        foreach ($SegmentosY as $r) {
+
+            $boletoDb = Boleto::where('txid', $r->txId);
+
+            $update = $boletoDb->update([
+                'url_pix' => $r->chavePixUrlQrCode
+            ]);
+        }
+
+        return ['message' => 'Success'];
+
+        // dd(
+        //     [
+        //         "HeaderArquivo" => $retorno->getHeaderArquivo(),
+        //         "HeaderLote" => $retorno->getHeaderLote(),
+        //         "SegmentosU" => $retorno->getSegmentosU(),
+        //         "SegmentosT" => $retorno->getSegmentosT(),
+        //         "SegmentosY" => $retorno->getSegmentosY()
+        //     ]
+        // );
     }
 
     function store()
@@ -74,15 +97,15 @@ class RemessaController extends Controller
 
             $line_p = new LineP();
             $line_p->setNumeroSequencialRegistroLote($sequencialLote);
-            $line_p->setValorNominalBoleto(number_format($boleto->valor,2,'',''));
+            $line_p->setValorNominalBoleto(number_format($boleto->valor, 2, '', ''));
             $line_p->setIdentificacaoBoletoNoBanco($boleto->nosso_numero);
             $line_p->setNumeroDocumento($boleto->codigo); //id fatura
             $line_p->setDataVencimentoBoleto($vencimento);
             $line_p->setDataEmissaoBoleto($emissao); //pegar do banco
-            $line_p->setValorNominalBoleto(number_format($boleto->valor,2,'',''));
+            $line_p->setValorNominalBoleto(number_format($boleto->valor, 2, '', ''));
             $line_p->setDataJurosMora($vencimento); //igual o vencimento
 
-            $sequencialLote ++;
+            $sequencialLote++;
 
             $line_q = new LineQ();
             $line_q
@@ -97,13 +120,13 @@ class RemessaController extends Controller
                 ->setCidadePagador($boleto->cliente->cidade)
                 ->setUnidadeFederacaoPagador($boleto->cliente->uf);
 
-            $sequencialLote ++;
+            $sequencialLote++;
 
             $line_y = new LineY03();
             $line_y->setNumeroSequencialRegistroLote($sequencialLote);
-            $line_y->setIdentificacaoBoletoNoBanco($boleto->codigo_pix);
+            $line_y->setIdentificacaoBoletoNoBanco($boleto->txid);
 
-            $sequencialLote ++;
+            $sequencialLote++;
 
             $remessa
                 ->addLine($line_p)
@@ -133,7 +156,8 @@ class RemessaController extends Controller
         return $remessaDb;
     }
 
-    public function download($id) {
+    public function download($id)
+    {
         $file = Storage::disk('local')->get("remessas/remessa-{$id}.txt");
 
         return response($file, 200, [

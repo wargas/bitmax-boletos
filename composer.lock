@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d229560a9a567cb49824020d728830df",
+    "content-hash": "c9b11a90094e68d2ddffef4eed22bd87",
     "packages": [
         {
             "name": "brick/math",
@@ -5337,6 +5337,46 @@
                 "source": "https://github.com/webmozarts/assert/tree/1.11.0"
             },
             "time": "2022-06-03T18:03:27+00:00"
+        },
+        {
+            "name": "zgldh/crc16-php",
+            "version": "v1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/zgldh/crc16-php.git",
+                "reference": "5e5ddc5b89358c329dc83526e34e4f61329d18ec"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/zgldh/crc16-php/zipball/5e5ddc5b89358c329dc83526e34e4f61329d18ec",
+                "reference": "5e5ddc5b89358c329dc83526e34e4f61329d18ec",
+                "shasum": ""
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Crc16\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "zgldh",
+                    "email": "zgldh@hotmail.com"
+                }
+            ],
+            "description": "crc16 hash methods for PHP",
+            "support": {
+                "issues": "https://github.com/zgldh/crc16-php/issues",
+                "source": "https://github.com/zgldh/crc16-php/tree/v1.1"
+            },
+            "time": "2021-04-10T06:25:24+00:00"
         }
     ],
     "packages-dev": [

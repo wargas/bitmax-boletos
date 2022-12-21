@@ -2,7 +2,7 @@
 
 namespace App\Libraries\Remessa\Lines;
 
-class LineR extends LineAbstract
+class LineS extends LineAbstract
 {
     private $codigo_banco_compensacao = 33;
     private $numero_lote_remessa;

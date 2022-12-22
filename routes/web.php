@@ -37,6 +37,9 @@ $router->group(['prefix' => 'api/v1', 'middleware' => 'auth'], function () use($
     $router->get('/remessas/download/{id}', 'RemessaController@download');
     $router->post('/remessas/retorno', 'RemessaController@retorno');
     $router->post('/remessas', 'RemessaController@store');
+    //Retorno
+    $router->get('/retornos', 'RetornoController@index');
+    $router->post('/retornos/upload', 'RetornoController@upload');
 });
 
 

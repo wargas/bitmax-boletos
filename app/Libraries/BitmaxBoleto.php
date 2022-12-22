@@ -9,7 +9,7 @@ use OpenBoleto\Banco\Santander;
 class BitmaxBoleto extends Santander {
 
     protected $pix_url = '';
-    
+
     public function __construct($params)
     {
         parent::__construct($params);
@@ -404,7 +404,7 @@ class BitmaxBoleto extends Santander {
         if ($boleto->getPixUrl()) {
             $x = $pdf->GetX();
             $y = $pdf->GetY();
-            $pdf->Image($boleto->getPixQrImage(), $x - 20, $y + 2, 18, 18, 'png');
+            $pdf->Image($boleto->getPixQrImage(), $x - 30, $y + 1, 30, 30, 'png');
 
             $pdf->SetXY($x, $y);
         }

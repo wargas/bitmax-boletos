@@ -30,27 +30,6 @@ class RemessaController extends Controller
     {
     }
 
-    function retorno(Request $request)
-    {
-        $text = file_get_contents($request->file('file'));
-
-        $retorno = new Retorno($text);
-
-        $SegmentosY = $retorno->getSegmentosY();
-
-        foreach ($SegmentosY as $r) {
-
-            $boletoDb = Boleto::where('txid', $r->txId);
-
-            $boletoDb->update([
-                'url_pix' => $r->chavePixUrlQrCode
-            ]);
-        }
-
-        return ['message' => 'Success'];
-
-    }
-
     function store()
     {
         $boletos = Boleto::with('cliente')->where('status', 'PENDENTE')->get();

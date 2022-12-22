@@ -32,15 +32,6 @@ class RemessaController extends Controller
 
     function retorno(Request $request)
     {
-
-        /*
-         $remessaDb = ModelsRemessa::create([
-            "sequencial" => $sequencial,
-            "data_criacao" => date("Y-m-d H:i:s"),
-            "status" => "PENDENTE"
-        ]);
-        */
-
         $text = file_get_contents($request->file('file'));
 
         $retorno = new Retorno($text);
@@ -51,22 +42,13 @@ class RemessaController extends Controller
 
             $boletoDb = Boleto::where('txid', $r->txId);
 
-            $update = $boletoDb->update([
+            $boletoDb->update([
                 'url_pix' => $r->chavePixUrlQrCode
             ]);
         }
 
         return ['message' => 'Success'];
 
-        // dd(
-        //     [
-        //         "HeaderArquivo" => $retorno->getHeaderArquivo(),
-        //         "HeaderLote" => $retorno->getHeaderLote(),
-        //         "SegmentosU" => $retorno->getSegmentosU(),
-        //         "SegmentosT" => $retorno->getSegmentosT(),
-        //         "SegmentosY" => $retorno->getSegmentosY()
-        //     ]
-        // );
     }
 
     function store()

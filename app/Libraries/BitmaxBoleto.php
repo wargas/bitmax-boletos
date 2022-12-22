@@ -1,7 +1,7 @@
 <?php
 namespace App\Libraries;
 
-use App\Libraries\Pix\PIXDinamico;
+use App\Libraries\Pix\Pixdinamico;
 use App\Libraries\PDF;
 use OpenBoleto\Agente;
 use OpenBoleto\Banco\Santander;
@@ -82,7 +82,7 @@ class BitmaxBoleto extends Santander {
     }
 
     public function getPixCode() {
-        $pix = new PIXDinamico($this->valor, $this->pix_url);
+        $pix = new Pixdinamico($this->valor, $this->pix_url);
 
         return $pix->getValue();
     }

@@ -1,16 +1,16 @@
-<?php 
+<?php
 
 namespace App\Libraries\Pix;
 
 use \Crc16\Crc16;
 
-class PIX extends Crc16 {
+class Pix extends Crc16 {
 
     protected $value;
 
     public function crc() {
         $value = $this->value.'6304';
-        
+
         $code = self::CCITT_FALSE($value);
 
         return strtoupper(str_pad(dechex($code), 4, "0", STR_PAD_LEFT));
@@ -28,7 +28,7 @@ class PIX extends Crc16 {
     public function getValue() {
         return $this->value;
     }
-    
+
 }
 
 /*

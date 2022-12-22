@@ -1,9 +1,9 @@
-<?php 
+<?php
 
 namespace App\Libraries\Pix;
 
 
-class PIXDinamico extends PIX {
+class Pixdinamico extends Pix {
 
     public function __construct(float $valor, string $url)
     {

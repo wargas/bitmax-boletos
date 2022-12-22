@@ -2,6 +2,7 @@
 
 namespace App\Libraries\Retorno;
 
+use Carbon\Carbon;
 
 class Retorno
 {
@@ -35,6 +36,16 @@ class Retorno
                 $this->linesY[] = $line;
             }
         }
+    }
+
+    public static function moneyToMysql($valor) {
+        return (float)preg_replace("/(.*)(\d{2})$/", "$1.$2", $valor);
+    }
+
+    public static function dateToMysql($valor) {
+        if($valor === '00000000')
+            return null;
+        return Carbon::createFromFormat('dmY', $valor)->format('Y-m-d');
     }
 
     public function getHeaderArquivo()

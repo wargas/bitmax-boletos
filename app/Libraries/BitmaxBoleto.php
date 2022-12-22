@@ -184,11 +184,22 @@ class BitmaxBoleto extends Santander {
         $pdf->MultiCell(190, 30, "", 1);
         $pdf->SetY($pdf->GetY() - 28);
         $pdf->Cell(100, 4, "Fornecimento de internet", 0, 0);
+
+        if ($boleto->getPixUrl()) {
+            $x = $pdf->GetX();
+            $y = $pdf->GetY();
+            $pdf->Image($boleto->getPixQrImage(), $x+30, $y-2, 30, 30, 'png');
+
+            $pdf->SetXY($x, $y);
+        }
+
         $pdf->Cell(90, 4, "Autenticação Mecânica", 0, 1, "R");
         $pdf->SetY($pdf->GetY() + 28);
 
         $pdf->Cell(190, 3, "Corte na linha pontilhada", 0, 1, "R");
         $pdf->Image("line.png", null, null, 190);
+
+
 
 
         $pdf->SetY($pdf->GetY() + 4, true);

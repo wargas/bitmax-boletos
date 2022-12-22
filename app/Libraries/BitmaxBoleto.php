@@ -9,7 +9,7 @@ use OpenBoleto\Banco\Santander;
 class BitmaxBoleto extends Santander {
 
     protected $pix_url = '';
-
+    
     public function __construct($params)
     {
         parent::__construct($params);
@@ -171,7 +171,7 @@ class BitmaxBoleto extends Santander {
 
         $pdf->SetFont("Arial", '', 8);
         $pdf->Cell(70, 4, "", "L", 0);
-        $pdf->Cell(40, 4, "(-) Outras dedu??es", "L", 0);
+        $pdf->Cell(40, 4, "(-) Outras deduções", "L", 0);
         $pdf->Cell(40, 4, "(+) Outros acréscimos", "L", 0);
         $pdf->Cell(40, 4, "(=) Valor cobrado", "LR", 1);
 
@@ -364,7 +364,7 @@ class BitmaxBoleto extends Santander {
 
         $pdf->SetFont("Arial", '', $fontSize);
         $pdf->Cell((30 / 190) * $width, $h, "Data do documento", "TL");
-        $pdf->Cell((30 / 190) * $width, $h, "N? documento", "TL");
+        $pdf->Cell((30 / 190) * $width, $h, "Nº documento", "TL");
         $pdf->Cell((30 / 190) * $width, $h, "é doc.", "TL");
         $pdf->Cell((15 / 190) * $width, $h, "Aceite", "TL");
         $pdf->Cell((30 / 190) * $width, $h, "Data processamento", "TL");
@@ -404,7 +404,7 @@ class BitmaxBoleto extends Santander {
         if ($boleto->getPixUrl()) {
             $x = $pdf->GetX();
             $y = $pdf->GetY();
-            $pdf->Image('https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' . $boleto->getPixCode(), $x - 20, $y + 2, 18, 18, 'png');
+            $pdf->Image($boleto->getPixQrImage(), $x - 20, $y + 2, 18, 18, 'png');
 
             $pdf->SetXY($x, $y);
         }
@@ -474,5 +474,11 @@ class BitmaxBoleto extends Santander {
         }
 
         return $bars;
+    }
+
+    public function getPixQrImage(): string {
+        $qr = new \chillerlan\QRCode\QRCode();
+
+        return $qr->render($this->getPixCode());
     }
 }

@@ -24,7 +24,7 @@ error_reporting(E_ALL);
 
 $router->get('/', [function (Request $request) {
 
-    return Boleto::first();
+    return Boleto::query()->limit(10)->get();
     //$vencimento = Carbon::createFromFormat("Y-m-d", "2022-01-01");
     //return $vencimento->format('d/m/Y');
     return ['API' => 'PORTAL BITMAX'];

@@ -21,17 +21,17 @@ class Boleto extends Model
 
     
     protected $appends = [
-    #"barcode", 
+    "barcode", 
     "linha_digitavel"
 ];
     public function cliente() {
         return $this->belongsTo(Clienteview::class, 'contrato_id');
     }
 
-    public function linha_digitavel(): Attribute {
+    public function linhaDigitavel(): Attribute {
         $boleto = BitmaxBoleto::fromDB($this);
         return Attribute::make(
-            get: fn ($value) => $boleto->getNumeroFebraban()
+            get: fn ($value) => $boleto->getLinhaDigitavel()
         );
     }
 

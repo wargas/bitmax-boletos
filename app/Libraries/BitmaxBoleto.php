@@ -79,6 +79,8 @@ class BitmaxBoleto extends Santander
     {
         $this->pix_url = $url;
 
+       
+
         return $this;
     }
 

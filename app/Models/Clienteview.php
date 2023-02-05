@@ -2,7 +2,9 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
-class Cliente extends Model {
+class Clienteview extends Model {
+
+    protected $table = 'view_clientes';
     // protected $fillable = [
     //     'nome',
     //     'documento',

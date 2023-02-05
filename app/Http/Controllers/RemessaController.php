@@ -10,6 +10,7 @@ use App\Libraries\Remessa\Lines\LineTrailerArquivo;
 use App\Libraries\Remessa\Lines\LineTrailerLote;
 use App\Libraries\Remessa\Lines\LineY03;
 use App\Libraries\Remessa\Remessa;
+use App\Libraries\Remessa\Campo;
 use App\Libraries\Retorno\Retorno;
 use App\Models\Boleto;
 use App\Models\Remessa as ModelsRemessa;
@@ -41,7 +42,7 @@ class RemessaController extends Controller
 
         $line_h_arquivo = new LineHeaderArquivo();
         $line_h_arquivo->setDataGeracaoArquivo(date("dmY"));
-        $line_h_arquivo->setNumeroSequencialArquivo(1);
+        $line_h_arquivo->setNumeroSequencialArquivo($sequencial);
 
         $line_h_lote = new LineHeaderLote();
         $line_h_lote->setNumeroRemessaRetorno(1);
@@ -60,7 +61,7 @@ class RemessaController extends Controller
             $line_p->setNumeroSequencialRegistroLote($sequencialLote);
             $line_p->setValorNominalBoleto(number_format($boleto->valor, 2, '', ''));
             $line_p->setIdentificacaoBoletoNoBanco($boleto->nosso_numero);
-            $line_p->setNumeroDocumento($boleto->codigo); //id fatura
+            $line_p->setNumeroDocumento($boleto->numero_documento); //id fatura
             $line_p->setDataVencimentoBoleto($vencimento);
             $line_p->setDataEmissaoBoleto($emissao); //pegar do banco
             $line_p->setValorNominalBoleto(number_format($boleto->valor, 2, '', ''));
@@ -71,14 +72,14 @@ class RemessaController extends Controller
             $line_q = new LineQ();
             $line_q
                 ->setNumeroSequencialRegistroLote($sequencialLote)
-                ->setTipoInscricaoPagador(1)
+                ->setTipoInscricaoPagador($boleto->cliente->pessoa)
                 ->setNumeroInscricaoPagador($boleto->cliente->documento)
-                ->setNomePagador($boleto->cliente->nome)
-                ->setEnderecoPagador($boleto->cliente->endereco)
-                ->setBairroPagador($boleto->cliente->bairro)
+                ->setNomePagador(Campo::rmAct($boleto->cliente->nome))
+                ->setEnderecoPagador(Campo::rmAct($boleto->cliente->endereco))
+                ->setBairroPagador(Campo::rmAct($boleto->cliente->bairro))
                 ->setCepPagador(substr($boleto->cliente->cep, 0, 5))
                 ->setSufixoCepPagador(substr($boleto->cliente->cep_sufixo, 5, 3))
-                ->setCidadePagador($boleto->cliente->cidade)
+                ->setCidadePagador(Campo::rmAct($boleto->cliente->cidade))
                 ->setUnidadeFederacaoPagador($boleto->cliente->uf);
 
             $sequencialLote++;
@@ -104,7 +105,7 @@ class RemessaController extends Controller
 
         $remessa->addLines($line_t_lote, $line_t_arquivo);
 
-        date_default_timezone_set("America/Recife");
+        // date_default_timezone_set("America/Recife");
 
         $remessaDb = ModelsRemessa::create([
             "sequencial" => $sequencial,
@@ -112,6 +113,8 @@ class RemessaController extends Controller
             "status" => "PENDENTE"
         ]);
 
+        // return $remessa->getText();
+        
         Storage::disk('local')->put("remessas/remessa-{$remessaDb->id}.txt", $remessa->getText());
 
         return $remessaDb;

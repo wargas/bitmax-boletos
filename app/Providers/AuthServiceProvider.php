@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Cliente;
 use App\Models\User;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -37,17 +38,29 @@ class AuthServiceProvider extends ServiceProvider
 
             $authorization = $request->header('Authorization');
 
+            
+
             if ($authorization) {
                 $token = explode(' ', $authorization)[1];
 
+                
+
                 $key = new Key(env('APP_KEY'), 'HS256');
+
+                
+                
 
                 $payload = JWT::decode($token, $key);
 
+
+                
                 if ($payload) {
+
                     $user = new User();
 
-                    $user->id = $payload->id;
+                    $user->id = $payload->codigo;
+
+                    
 
                     return $user;
                 }

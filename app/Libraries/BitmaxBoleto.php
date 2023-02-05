@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Libraries;
 
 use App\Libraries\Pix\Pixdinamico;
@@ -6,7 +7,8 @@ use App\Libraries\PDF;
 use OpenBoleto\Agente;
 use OpenBoleto\Banco\Santander;
 
-class BitmaxBoleto extends Santander {
+class BitmaxBoleto extends Santander
+{
 
     protected $pix_url = '';
 
@@ -18,7 +20,8 @@ class BitmaxBoleto extends Santander {
     /**
      * @return \App\Libraries\BitmaxBoleto
      */
-    public static function factory() {
+    public static function factory()
+    {
         $cedente = new Agente(
             'BITMAX TELECOM LTDA',
             '11.340.883/0001-03',
@@ -37,10 +40,10 @@ class BitmaxBoleto extends Santander {
             'agenciaDv' => 5,
             'carteiraDv' => 1,
             'descricaoDemonstrativo' => array(
-                'Fornecimento de internet'
+                'Mensalidade'
             ),
             'instrucoes' => array(
-                'Após o dia 30/11 cobrar 2% de mora e 1% de juros ao dia.',
+                'Após o vencimento cobrar 2% de mora e 1% de juros ao mês.',
                 'Não receber após o vencimento.',
             ),
 
@@ -50,7 +53,8 @@ class BitmaxBoleto extends Santander {
     /**
      * @return \App\Libraries\BitmaxBoleto
      */
-    public static function fromDB($boleto_from_db) {
+    public static function fromDB($boleto_from_db)
+    {
         $boleto = self::factory();
 
         $boleto->setPixUrl($boleto_from_db->url_pix);
@@ -58,7 +62,7 @@ class BitmaxBoleto extends Santander {
         $boleto
             ->setDataVencimento(new \DateTime($boleto_from_db->vencimento))
             ->setValor($boleto_from_db->valor)
-            ->setNumeroDocumento($boleto_from_db->codigo)
+            ->setNumeroDocumento($boleto_from_db->numero_documento)
             ->setSequencial($boleto_from_db->nosso_numero)
             ->setSacado(new Agente(
                 $boleto_from_db->cliente->nome,
@@ -71,17 +75,20 @@ class BitmaxBoleto extends Santander {
         return $boleto;
     }
 
-    public function setPixUrl(string | null $url) {
+    public function setPixUrl(string | null $url)
+    {
         $this->pix_url = $url;
 
         return $this;
     }
 
-    public function getPixUrl() {
+    public function getPixUrl()
+    {
         return $this->pix_url;
     }
 
-    public function getPixCode() {
+    public function getPixCode()
+    {
         $pix = new Pixdinamico($this->valor, $this->pix_url);
 
         return $pix->getValue();
@@ -188,7 +195,7 @@ class BitmaxBoleto extends Santander {
         if ($boleto->getPixUrl()) {
             $x = $pdf->GetX();
             $y = $pdf->GetY();
-            $pdf->Image($boleto->getPixQrImage(), $x+30, $y-2, 30, 30, 'png');
+            $pdf->Image($boleto->getPixQrImage(), $x + 30, $y - 2, 30, 30, 'png');
 
             $pdf->SetXY($x, $y);
         }
@@ -339,8 +346,6 @@ class BitmaxBoleto extends Santander {
             $width = 190;
         }
 
-
-
         $pdf->Image("santander.jpg", $pdf->GetX(), $pdf->GetY(), 30 / 190 * $width, 6);
         $pdf->Cell((35 / 190) * $width, 6, "", "R", 0, "C");
         $pdf->SetFont("Arial", 'B', 10);
@@ -413,11 +418,18 @@ class BitmaxBoleto extends Santander {
         $pdf->Cell((135 / 190) * $width, $h, "Instruções (Texto de responsabilidade do beneficiário)");
 
         if ($boleto->getPixUrl()) {
-            $x = $pdf->GetX();
-            $y = $pdf->GetY();
-            $pdf->Image($boleto->getPixQrImage(), $x - 30, $y + 1, 30, 30, 'png');
+            if ($carne) {
+                $x = $pdf->GetX();
+                $y = $pdf->GetY();
+                $pdf->Image($boleto->getPixQrImage(), $x - 23, $y - 1, 23, 23, 'png');
+                $pdf->SetXY($x, $y);
+            } else {
 
-            $pdf->SetXY($x, $y);
+                $x = $pdf->GetX();
+                $y = $pdf->GetY();
+                $pdf->Image($boleto->getPixQrImage(), $x - 30, $y + 1, 30, 30, 'png');
+                $pdf->SetXY($x, $y);
+            }
         }
 
         $pdf->Cell((55 / 190) * $width, $h, " (-) Outras deduções", "TLR", 1);
@@ -487,9 +499,23 @@ class BitmaxBoleto extends Santander {
         return $bars;
     }
 
-    public function getPixQrImage(): string {
+    public function getPixQrImage(): string
+    {
         $qr = new \chillerlan\QRCode\QRCode();
 
         return $qr->render($this->getPixCode());
     }
+
+    public function qrcodepix()
+    {
+        $boleto = $this;
+        
+        $response['img'] = $boleto->getPixQrImage();
+        $response['payload'] = $boleto->getPixCode();
+        $response['barcode'] = $boleto->getPixCode();
+        //  $bars = self::getBars($boleto->getData()['codigo_barras']);
+        
+        return $response;
+    }
+    
 }

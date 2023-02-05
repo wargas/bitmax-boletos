@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Libraries\BitmaxBoleto;
 use App\Models\Boleto;
+use App\Models\Cliente;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
@@ -12,7 +13,11 @@ class BoletosController extends Controller
    
     public function index(Request $request)
     {
-        $documento = $request->get("documento");
+
+        $user = $request->user();
+
+        $documento =  Cliente::where('codigo', $user->id)->first()->cliente_cpf_cnpj;
+        
         return Boleto::with('cliente')
             ->whereHas('cliente', function (Builder $query) use ($documento) {
                 $query->where('documento', '=', $documento);
@@ -33,16 +38,27 @@ class BoletosController extends Controller
         ]);
     }
 
-    public function store()
+    public function qrcodepix($id)
     {
-        return Boleto::create([
-            'cliente_id' => 1,
-            'vencimento' => '2022-12-20',
-            'nosso_numero' => '002211936912',
-            'valor' => 60,
-            'status' => 'registrado',
-        ]);
+
+        $boletoData = Boleto::find($id);
+
+        $boleto = BitmaxBoleto::fromDB($boletoData);
+
+        return $boleto->qrcodepix();
+
     }
+    
+    // public function store()
+    // {
+    //     return Boleto::create([
+    //         'cliente_id' => 1,
+    //         'vencimento' => '2022-12-20',
+    //         'nosso_numero' => '002211936912',
+    //         'valor' => 60,
+    //         'status' => 'registrado',
+    //     ]);
+    // }
 
 
     public function carne(Request $request)
